@@ -1,0 +1,46 @@
+{
+    "name": "Project Plutus",
+    // "image": "bjing/plutus-apps-container:next-node",
+    "image": "plutus-apps-container:latest",
+	// "build": {
+	// 	"dockerfile": "Dockerfile",
+	// 	"args": {  }
+	// },
+    //"remoteUser": "plutus",
+    "mounts": [
+        // This shares cabal's remote repository state with the host. We don't mount the whole of '.cabal', because
+        // 1. '.cabal/config' contains absolute paths that will only make sense on the host, and
+        // 2. '.cabal/store' is not necessarily portable to different version of cabal etc.
+        "source=${localEnv:HOME}/.cabal/packages,target=/root/.cabal/packages,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.cabal/store,target=/root/.cabal/store,type=bind,consistency=cached",
+        // "source=/nix/store,target=/nix/store,type=bind,consistency=cached",
+        "source=plutus-nix-store,target=/nix/store,type=volume",
+        // "source=${localWorkspaceFolder}/.git,target=/workspaces/plutus-buoy/.git,type=bind,consistency=cached",
+        // "source=${localWorkspaceFolder}/.devcontainer/nsswitch.conf,target=/etc/nsswitch.conf,type=bind,consistency=cached",
+        // "source=/etc/os-release,target=/etc/os-release,type=bind,consistency=cached",
+        // "source=/etc/profile,target=/etc/profile,type=bind,consistency=cached"
+    ],
+
+    "settings": {
+        // Note: don't change from bash so it runs .bashrc
+        //"terminal.integrated.shell.linux": "/bin/bash",
+        "terminal.integrated.profiles.linux": {
+            "bash": {
+                "path": "/bin/bash"
+            }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+    },
+    // "postCreateCommand": [
+    //     "/bin/sh", "-c",
+    //     "apt-get install -y autoconf make libtool gcc gawk \
+    //      && chmod +x scripts/secp256k1-setup.sh \
+    //      && scripts/secp256k1-setup.sh 694ce8fb2d1fd8a3d641d7c33705691d41a2a860 \
+    //      && cd /home/user/plutus-apps \
+    //      && git checkout 172873e87789d8aac623e014eff9a39364c719ae"
+    // ],
+    "postStartCommand": "cd /home/user/plutus-apps && nix-shell --extra-experimental-features flakes",
+    "extensions": [
+        "haskell.haskell"
+    ]
+}

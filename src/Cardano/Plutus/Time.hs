@@ -1,0 +1,4 @@
+-- https://www.reddit.com/r/CardanoDevelopers/comments/nkqprw/epochs_slots_and_time/
+-- First epoch started at 2017/09/28 21:44:51
+-- For anyone wondering, the first 207 epochs had 21600 slots and from epoch 208 onwards it's 432000 per epoch.
+-- So, the math makes more sense now - e.g. the last slot of epoch 266 is 29980787 and 207 * 21600 + 59 * 432000 = 29959200.
