@@ -1,4 +1,4 @@
-module Cardano.Plutus.Sort where
+module PlutusBuoy.Plutus.Sort where
 
 import PlutusTx.Prelude
 import PlutusTx
@@ -6,8 +6,8 @@ import PlutusTx.Builtins
 import PlutusTx.List
 import Control.Arrow ((&&&))
 import GHC.Prim (seq)
-import Cardano.Plutus.List
-import Cardano.Plutus.Monad
+import PlutusBuoy.Plutus.List
+import PlutusBuoy.Plutus.Monad
 import Data.These
 
 -- |

@@ -1,4 +1,4 @@
-module Cardano.Plutus.Maybe where
+module PlutusBuoy.Plutus.Maybe where
 
 import PlutusTx.Prelude
 

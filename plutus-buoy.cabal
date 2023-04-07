@@ -66,25 +66,25 @@ common lang
 library
     import: lang
     exposed-modules:
-      Cardano.Plutus.Test
-      Cardano.Address
-      Cardano.Plutus.FromBS
-      Cardano.Plutus.Crypto
+      PlutusBuoy.Plutus.Test
+      PlutusBuoy.Address
+      PlutusBuoy.Plutus.FromBS
+      PlutusBuoy.Plutus.Crypto
 
-      Cardano.Plutus.V1.Common
-      Cardano.Plutus.V2.Common
-      Cardano.Plutus.V1.Contexts
-      Cardano.Plutus.V2.Contexts
-      Cardano.Plutus.V2.ToBBS
+      PlutusBuoy.Plutus.V1.Common
+      PlutusBuoy.Plutus.V2.Common
+      PlutusBuoy.Plutus.V1.Contexts
+      PlutusBuoy.Plutus.V2.Contexts
+      PlutusBuoy.Plutus.V2.ToBBS
 
-      Cardano.Plutus.ByteString
-      Cardano.Plutus.Common
-      Cardano.Plutus.List
-      Cardano.Plutus.Maybe
-      Cardano.Plutus.Monad
-      Cardano.Plutus.Sort
+      PlutusBuoy.Plutus.ByteString
+      PlutusBuoy.Plutus.Common
+      PlutusBuoy.Plutus.List
+      PlutusBuoy.Plutus.Maybe
+      PlutusBuoy.Plutus.Monad
+      PlutusBuoy.Plutus.Sort
     other-modules:
-      Cardano.Plutus.Validator
+      PlutusBuoy.Plutus.Validator
     build-depends:
       base >= 4.9 && < 5,
       aeson,

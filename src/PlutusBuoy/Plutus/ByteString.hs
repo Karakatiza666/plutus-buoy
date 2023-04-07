@@ -1,4 +1,4 @@
-module Cardano.Plutus.ByteString where
+module PlutusBuoy.Plutus.ByteString where
 
 import PlutusTx.Prelude
 import PlutusTx.Builtins

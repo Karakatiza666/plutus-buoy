@@ -1,5 +1,5 @@
 
-module Cardano.Address where
+module PlutusBuoy.Address where
 
 import Prelude
 import Codec.Binary.Bech32

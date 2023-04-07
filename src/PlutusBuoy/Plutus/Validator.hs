@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Cardano.Plutus.Validator where
+module PlutusBuoy.Plutus.Validator where
 
 import Cardano.Api.Shelley  as Shelley (PlutusScript (..), PlutusScriptV1, PlutusScriptV2, textEnvelopeRawCBOR, serialiseToTextEnvelope)
 -- import Cardano.Api.Babbage  as Babbage (PlutusScript (..), PlutusScriptV2, textEnvelopeRawCBOR, serialiseToTextEnvelope)

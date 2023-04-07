@@ -1,8 +1,8 @@
-module Cardano.Plutus.Crypto where
+module PlutusBuoy.Plutus.Crypto where
 
 import PlutusTx.Prelude
 import PlutusTx.Builtins
-import Cardano.Plutus.ByteString
+import PlutusBuoy.Plutus.ByteString
 
 -- Calculate n-byte random number from bytestring seed
 {-# INLINABLE drng #-}

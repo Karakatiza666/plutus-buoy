@@ -3,7 +3,7 @@
 {-# LANGUAGE TupleSections  #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module Cardano.Plutus.V1.Common where
+module PlutusBuoy.Plutus.V1.Common where
 
 import Codec.Serialise
 import Cardano.Api.Shelley (PlutusScript (..), PlutusScriptV1, textEnvelopeRawCBOR, serialiseToTextEnvelope)

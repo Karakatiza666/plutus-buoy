@@ -1,5 +1,5 @@
 
-module Cardano.Plutus.Test where
+module PlutusBuoy.Plutus.Test where
 
 import PlutusTx.Prelude
 import PlutusTx.Builtins

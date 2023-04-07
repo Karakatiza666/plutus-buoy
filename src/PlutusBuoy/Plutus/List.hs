@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Cardano.Plutus.List where
+module PlutusBuoy.Plutus.List where
 
 import PlutusTx.Builtins
 import PlutusTx.Prelude

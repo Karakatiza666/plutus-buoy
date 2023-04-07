@@ -1,5 +1,5 @@
 
-module Cardano.Plutus.Monad where
+module PlutusBuoy.Plutus.Monad where
 
 import PlutusTx.Prelude
 import Control.Monad

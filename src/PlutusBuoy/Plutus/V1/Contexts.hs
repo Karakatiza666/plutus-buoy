@@ -3,13 +3,13 @@
 -- {-# OPTIONS_GHC -fobject-code #-}
 -- {-# OPTIONS_GHC -fno-specialise #-}
 
-module Cardano.Plutus.V1.Contexts where
+module PlutusBuoy.Plutus.V1.Contexts where
 
 import PlutusTx.Prelude
 
-import Cardano.Plutus.Common
-import Cardano.Plutus.V1.Common
-import Cardano.Plutus.List
+import PlutusBuoy.Plutus.Common
+import PlutusBuoy.Plutus.V1.Common
+import PlutusBuoy.Plutus.List
 import Data.Tuple.Extra hiding (fst, snd)
 import PlutusTx
 import PlutusTx.Foldable

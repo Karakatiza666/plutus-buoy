@@ -4,7 +4,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -fno-specialise #-}
 
-module Cardano.Plutus.Common where
+module PlutusBuoy.Plutus.Common where
 
 import Codec.Serialise
 import Cardano.Api.Shelley (PlutusScript (..), PlutusScriptV1, textEnvelopeRawCBOR, serialiseToTextEnvelope)

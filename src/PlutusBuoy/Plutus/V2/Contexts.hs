@@ -7,11 +7,11 @@
 -- {-# OPTIONS_GHC -fobject-code #-}
 -- {-# OPTIONS_GHC -fno-specialise #-}
 
-module Cardano.Plutus.V2.Contexts where
+module PlutusBuoy.Plutus.V2.Contexts where
 
-import Cardano.Plutus.Common
-import Cardano.Plutus.Sort
-import Cardano.Plutus.V2.Common
+import PlutusBuoy.Plutus.Common
+import PlutusBuoy.Plutus.Sort
+import PlutusBuoy.Plutus.V2.Common
 
 import Control.Lens (view)
 import Control.Monad (void, when, join, (<=<))
@@ -57,7 +57,7 @@ import Playground.Contract
 -- import PlutusTx.Foldable (foldl, foldMap)
 -- import PlutusTx.Maybe (maybe)
 
-import Cardano.Plutus.List
+import PlutusBuoy.Plutus.List
 import PlutusTx
 import PlutusTx.Prelude
 import Plutus.V2.Ledger.Tx
@@ -255,7 +255,7 @@ hasOnlyOwnDatum ctx@ScriptContext{scriptContextTxInfo=txIn} =
 -- Has a single output of given script that satisfies pred
 {-# INLINABLE hasOnlyScriptOutThat #-}
 hasOnlyScriptOutThat :: ValidatorHash -> (TxOut -> Bool) -> TxInfo -> Bool
-hasOnlyScriptOutThat hash pred txIn = isJust $ onlyAndSatisfies pred (Cardano.Plutus.V2.Contexts.scriptOutputsAt hash txIn)
+hasOnlyScriptOutThat hash pred txIn = isJust $ onlyAndSatisfies pred (PlutusBuoy.Plutus.V2.Contexts.scriptOutputsAt hash txIn)
 
 -- Has a single script input that satisfies pred
 {-# INLINABLE hasOnlyScriptIn #-}

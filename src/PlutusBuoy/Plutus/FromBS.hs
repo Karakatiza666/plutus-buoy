@@ -3,16 +3,16 @@
 {-# LANGUAGE TupleSections  #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module Cardano.Plutus.FromBS where
+module PlutusBuoy.Plutus.FromBS where
 
 import Prelude
 
 import Codec.Serialise
 import Data.Semigroup
 import Data.ByteString as Strict (ByteString)
-import Cardano.Plutus.Validator
-import Cardano.Plutus.Common
-import Cardano.Plutus.ByteString
+import PlutusBuoy.Plutus.Validator
+import PlutusBuoy.Plutus.Common
+import PlutusBuoy.Plutus.ByteString
 import Plutus.V1.Ledger.Scripts
 
 -- import Cardano.Api.Shelley (PlutusScript (..), PlutusScriptV1, textEnvelopeRawCBOR, serialiseToTextEnvelope)

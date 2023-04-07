@@ -1,5 +1,5 @@
 
-module Cardano.Plutus.V2.Common where
+module PlutusBuoy.Plutus.V2.Common where
 
 import PlutusTx
 import PlutusTx.Prelude
@@ -9,7 +9,7 @@ import Plutus.V1.Ledger.Address
 import Plutus.V1.Ledger.Credential
 import Plutus.V1.Ledger.Crypto
 import Plutus.V1.Ledger.Scripts
-import Cardano.Plutus.Common
+import PlutusBuoy.Plutus.Common
 
 {-# INLINABLE fromDatum #-}
 fromDatum :: PlutusTx.FromData a => Datum -> Maybe a
