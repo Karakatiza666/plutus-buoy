@@ -71,16 +71,19 @@ library
       Cardano.Plutus.FromBS
       Cardano.Plutus.Crypto
 
-      Cardano.Plutus.Common
       Cardano.Plutus.V1.Common
       Cardano.Plutus.V2.Common
       Cardano.Plutus.V1.Contexts
       Cardano.Plutus.V2.Contexts
       Cardano.Plutus.V2.ToBBS
-    other-modules:
+
       Cardano.Plutus.ByteString
+      Cardano.Plutus.Common
       Cardano.Plutus.List
+      Cardano.Plutus.Maybe
+      Cardano.Plutus.Monad
       Cardano.Plutus.Sort
+    other-modules:
       Cardano.Plutus.Validator
     build-depends:
       base >= 4.9 && < 5,

@@ -103,10 +103,6 @@ valueSpentFromScript' txIn = foldlNonEmpty (<>) mempty . fmap txOutValue . txOut
 valueSpentFrom :: TxInfo -> Credential -> Maybe Value
 valueSpentFrom txIn = foldlNonEmpty (<>) mempty . fmap txOutValue . txOutsSpentFrom txIn
 
-{-# INLINABLE valueSpentFromHolder #-}
-valueSpentFromHolder :: CurrencySymbol -> TxInfo -> Value
-valueSpentFromHolder currency = ((mconcat . map txOutValue) .) . inputOutsThat $ hasCurrency currency . txOutValue . txInInfoResolved
-
 {-# INLINABLE pubKeyInputsAt #-}
 -- | Get the values paid to a public key address by a pending transaction.
 pubKeyInputsAt :: PubKeyHash -> TxInfo -> [Value]
@@ -125,6 +121,12 @@ publicKeyOutputs :: TxInfo -> [(PubKeyHash, Value)]
 publicKeyOutputs TxInfo {..} =
     [(hash, txOutValue) | TxOut{txOutAddress=Address (PubKeyCredential hash) _, txOutValue} <- txInfoOutputs ]
 
+-- {-# INLINABLE scriptTxInsThat #-}
+-- scriptTxInsThat :: TxInfo -> (ValidatorHash -> Bool) -> [TxInInfo]
+-- scriptTxInsThat TxInfo {..} pred =
+--     [ txIn | txIn@TxInInfo{txInInfoResolved = TxOut{txOutDatumHash=Just datumhash, txOutAddress=Address (ScriptCredential hash) _, txOutValue}}
+--         <- txInfoInputs, pred hash ]
+
 {-# INLINABLE scriptOutputsThat #-}
 scriptOutputsThat :: (TxOut -> Bool) -> TxInfo -> [TxOut]
 scriptOutputsThat pred TxInfo {..} =
@@ -141,20 +143,36 @@ scriptOutputsAt = scriptOutputsThat . atScriptAddress
 scriptOutputs :: TxInfo -> [TxOut]
 scriptOutputs = scriptOutputsThat (const True)
 
+{-# INLINABLE inputsThat #-}
+inputsThat :: (TxInInfo -> Bool) -> TxInfo -> [TxInInfo]
+inputsThat pred txIn = [ i | i <- txInfoInputs txIn, pred i ]
+
+{-# INLINABLE inputThat #-}
+inputThat :: (TxInInfo -> Bool) -> TxInfo -> Maybe TxInInfo
+inputThat pred txIn = find pred (txInfoInputs txIn)
+
 {-# INLINABLE inputOutsThat #-}
 inputOutsThat :: (TxInInfo -> Bool) -> TxInfo -> [TxOut]
 inputOutsThat pred txIn = [ txInInfoResolved i | i <- txInfoInputs txIn, pred i ]
+
+{-# INLINABLE inputOutThat #-}
+inputOutThat :: (TxInInfo -> Bool) -> TxInfo -> Maybe TxOut
+inputOutThat pred txIn = txInInfoResolved <$> find pred (txInfoInputs txIn)
 
 {-# INLINABLE refInputOutsThat #-}
 refInputOutsThat :: (TxInInfo -> Bool) -> TxInfo -> [TxOut]
 refInputOutsThat pred txIn = [ txInInfoResolved i | i <- txInfoReferenceInputs txIn, pred i ]
 
+{-# INLINABLE refInputOutThat #-}
+refInputOutThat :: (TxInInfo -> Bool) -> TxInfo -> Maybe TxOut
+refInputOutThat pred txIn = txInInfoResolved <$> find pred (txInfoReferenceInputs txIn)
+
 {-# INLINABLE outputsThat #-}
 outputsThat :: (TxOut -> Bool) -> TxInfo -> [TxOut]
 outputsThat pred txIn = [ i | i <- txInfoOutputs txIn, pred i ]
 
--- scriptInputsAt :: ValidatorHash -> TxInfo -> [TxOut]
--- scriptInputsAt h = inputOutsThat ((ScriptCredential h == ) . addressCredential . txOutAddress . txInInfoResolved)
+-- scriptInputOutsAt :: ValidatorHash -> TxInfo -> [TxOut]
+-- scriptInputOutsAt h = inputOutsThat ((ScriptCredential h == ) . addressCredential . txOutAddress . txInInfoResolved)
 
 {-# INLINABLE scriptInputOutsThat #-}
 scriptInputOutsThat :: (TxOut -> Bool) -> TxInfo -> [TxOut]
@@ -169,8 +187,12 @@ scriptInputsThat pred TxInfo {..} =
     [txIn | txIn@TxInInfo { txInInfoResolved = TxOut{txOutAddress=Address (ScriptCredential _) _} } <- txInfoInputs, pred txIn ]
 
 {-# INLINABLE scriptInputsAt #-}
-scriptInputsAt :: ValidatorHash -> TxInfo -> [TxOut]
-scriptInputsAt = scriptInputOutsThat . atScriptAddress
+scriptInputsAt :: ValidatorHash -> TxInfo -> [TxInInfo]
+scriptInputsAt = scriptInputsThat . inputAtScriptAddress
+
+{-# INLINABLE scriptInputOutsAt #-}
+scriptInputOutsAt :: ValidatorHash -> TxInfo -> [TxOut]
+scriptInputOutsAt = scriptInputOutsThat . atScriptAddress
 
 {-# INLINABLE scriptInputs #-}
 scriptInputs :: TxInfo -> [TxOut]
@@ -178,13 +200,13 @@ scriptInputs = scriptInputOutsThat (const True)
 
 {-# INLINABLE spentScriptInput #-}
 spentScriptInput :: ValidatorHash -> TxInfo -> Bool
-spentScriptInput h txIn = length (scriptInputsAt h txIn) > 0
+spentScriptInput h txIn = length (scriptInputOutsAt h txIn) > 0
 
 {-# INLINABLE valueSpentFromScript #-}
 -- | Get the total value spent by the given validator in this transaction.
 valueSpentFromScript :: ValidatorHash -> TxInfo -> Value
 valueSpentFromScript h ptx =
-    let outputs = map txOutValue $ scriptInputsAt h ptx
+    let outputs = map txOutValue $ scriptInputOutsAt h ptx
     in mconcat outputs
 
 {-# INLINABLE valueReferenced #-}
@@ -203,6 +225,10 @@ txInCred = addressCredential . txOutAddress . txInInfoResolved
 atScriptAddress :: ValidatorHash -> TxOut -> Bool
 atScriptAddress hash = (ScriptCredential hash ==) . addressCredential . txOutAddress
 
+{-# INLINABLE inputAtScriptAddress #-}
+inputAtScriptAddress :: ValidatorHash -> TxInInfo -> Bool
+inputAtScriptAddress hash = (ScriptCredential hash ==) . addressCredential . txOutAddress . txInInfoResolved
+
 {-# INLINABLE thatScriptAddress #-}
 thatScriptAddress :: (ValidatorHash -> Bool) -> TxOut -> Bool
 thatScriptAddress pred =
@@ -214,7 +240,7 @@ thatScriptAddress pred =
 -- does given script have a single output with specified datum
 {-# INLINABLE hasOnlyDatumAt #-}
 hasOnlyDatumAt :: PlutusTx.FromData a => TxInfo -> (a -> Bool) -> ValidatorHash -> Bool
-hasOnlyDatumAt txIn pred hash = or . fmap pred $ (readDatum txIn . txOutDatum) =<<
+hasOnlyDatumAt txIn pred hash = or . fmap pred $ (lookupDatum txIn . txOutDatum) =<<
     -- onlyAndSatisfies (atScriptAddress hash) (scriptOutputs txIn)
     only (scriptOutputsThat (atScriptAddress hash) txIn)
 
@@ -272,11 +298,15 @@ assetTransferredTo currency token = (valueOf' currency token . ) . valueTransfer
 aclTransferredTo :: AssetClass -> ValidatorHash -> TxInfo -> Integer
 aclTransferredTo (AssetClass (currency, token)) = (valueOf' currency token . ) . valueTransferredToScript
 
+{-# INLINABLE valueSpentFromHolder #-}
+valueSpentFromHolder :: CurrencySymbol -> TxInfo -> Value
+valueSpentFromHolder currency = ((mconcat . map txOutValue) .) . inputOutsThat $ txInHasCurrency currency
+
 {-# INLINABLE valueLockedByHolder #-}
 -- | Get the total value locked by the UTxOs containing the given currency symbol in this transaction.
 valueLockedByHolder :: CurrencySymbol -> TxInfo -> Value
 valueLockedByHolder currency =
-    ((mconcat . map txOutValue) .) . scriptOutputsThat $ hasCurrency currency . txOutValue
+    ((mconcat . map txOutValue) .) . scriptOutputsThat $ txOutHasCurrency currency
 
 {-# INLINABLE valueTransferredToHolder #-}
 valueTransferredToHolder :: CurrencySymbol -> TxInfo -> Value
@@ -289,6 +319,14 @@ assetTransferredToHolder currency token = (valueOf' currency token . ) . valueTr
 {-# INLINABLE aclTransferredToHolder #-}
 aclTransferredToHolder :: AssetClass -> CurrencySymbol -> TxInfo -> Integer
 aclTransferredToHolder (AssetClass (currency, token)) = (valueOf' currency token . ) . valueTransferredToHolder
+
+-- {-# INLINABLE signedByPolicyHolder #-}
+-- signedByPolicyHolder :: CurrencySymbol -> TxInfo -> Bool
+-- signedByPolicyHolder currency txIn = inputOutsThat $ txInHasCurrency currency
+
+{-# INLINABLE signedByRefPolicyHolder #-}
+signedByRefPolicyHolder :: CurrencySymbol -> TxInfo -> Bool
+signedByRefPolicyHolder currency txIn = (Just True ==) $ fmap (txSignedByPubKey txIn . txOutAddress) $ refInputOutThat (txInHasCurrency currency) txIn
 
 inlineDatum :: FromData a => OutputDatum -> Maybe a
 inlineDatum (OutputDatum d) = fromDatum d
@@ -335,6 +373,14 @@ addressesPaidFilter = addressesValue . txInfoOutputs
 {-# INLINABLE requireOwnInput #-}
 requireOwnInput :: ScriptContext -> TxInInfo
 requireOwnInput = fromJust . findOwnInput
+
+{-# INLINABLE ownInputs #-}
+ownInputs :: ScriptContext -> [TxInInfo]
+ownInputs ctx@ScriptContext{scriptContextTxInfo=txIn} = scriptInputsAt (ownHash ctx) txIn
+
+{-# INLINABLE ownInputOuts #-}
+ownInputOuts :: ScriptContext -> [TxOut]
+ownInputOuts ctx@ScriptContext{scriptContextTxInfo=txIn} = scriptInputOutsAt (ownHash ctx) txIn
 
 {-# INLINABLE requireSpendingRef #-}
 requireSpendingRef :: ScriptContext -> TxOutRef

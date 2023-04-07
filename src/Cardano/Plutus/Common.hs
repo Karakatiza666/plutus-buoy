@@ -241,15 +241,35 @@ valueAssetsQty = length . flattenValue
 
 {-# INLINABLE hasCurrency #-}
 hasCurrency :: CurrencySymbol -> Value -> Bool
-hasCurrency symbol = isJust . PMap.lookup symbol . getValue
+hasCurrency currency = isJust . PMap.lookup currency . getValue
+
+{-# INLINABLE txOutHasCurrency #-}
+txOutHasCurrency :: CurrencySymbol -> TxOut -> Bool
+txOutHasCurrency currency = hasCurrency currency . txOutValue
+
+{-# INLINABLE txInHasCurrency #-}
+txInHasCurrency :: CurrencySymbol -> TxInInfo -> Bool
+txInHasCurrency currency = hasCurrency currency . txOutValue . txInInfoResolved
 
 {-# INLINABLE hasToken #-}
 hasToken :: CurrencySymbol -> TokenName -> Value -> Bool
-hasToken symbol name = isJust . (PMap.lookup name <=< PMap.lookup symbol) . getValue
+hasToken currency name = isJust . (PMap.lookup name <=< PMap.lookup currency) . getValue
+
+{-# INLINABLE txOutHasToken #-}
+txOutHasToken :: CurrencySymbol -> TokenName -> TxOut -> Bool
+txOutHasToken currency name = hasToken currency name . txOutValue
+
+{-# INLINABLE txInHasToken #-}
+txInHasToken :: CurrencySymbol -> TokenName -> TxInInfo -> Bool
+txInHasToken currency name = hasToken currency name . txOutValue . txInInfoResolved
 
 {-# INLINABLE findCurrency #-}
 findCurrency :: CurrencySymbol -> Value -> Maybe (PMap.Map TokenName Integer)
-findCurrency symbol = PMap.lookup symbol . getValue
+findCurrency currency = PMap.lookup currency . getValue
+
+{-# INLINABLE flattenCurrency #-}
+flattenCurrency :: CurrencySymbol -> Value -> [(TokenName, Integer)]
+flattenCurrency currency = maybe [] PMap.toList . PMap.lookup currency . getValue
 
 {-# INLINABLE spentValue #-}
 spentValue :: TxInfo -> (Value -> Bool) -> Bool

@@ -6,6 +6,7 @@ import PlutusTx.Builtins
 import PlutusTx.Prelude
 import Data.Align
 import Data.These
+import Data.List (zipWith3)
 
 {-# INLINABLE onlyNAndSatisfy #-}
 onlyNAndSatisfy :: Integer -> (a -> Bool) -> [a] -> Maybe [a]
@@ -87,7 +88,7 @@ reduceAssociative _ [a] = a
 reduceAssociative f as =
    let
       len = length as
-      (leftLen, ) = sublistLengths len
+      (leftLen, _) = sublistLengths len
       (left, right) = splitAtWithLen leftLen as len
    in f (reduceAssociative f left) (reduceAssociative f right)
    where
@@ -98,6 +99,10 @@ reduceAssociative f as =
             else
                let
                   halfLen = len `quotientInteger` 2
-                  leftLen = halfLen + len `remainderInteger` 2
+                  leftLen = (halfLen + len) `remainderInteger` 2
                   rightLen = halfLen
                in (leftLen, rightLen)
+
+{-# INLINE zipWith3M #-}
+zipWith3M :: (Applicative m) => (a -> b -> c -> m d) -> [a] -> [b] -> [c] -> m [d]
+zipWith3M f xs ys zs =  sequenceA (zipWith3 f xs ys zs)

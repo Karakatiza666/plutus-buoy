@@ -20,13 +20,13 @@ fromRedeemer :: PlutusTx.FromData a => Redeemer -> Maybe a
 fromRedeemer = PlutusTx.fromBuiltinData . getRedeemer
 
 -- Throws if couldn't read datum hash or parse datum
-{-# INLINABLE readDatum #-}
-readDatum :: PlutusTx.FromData a => TxInfo -> OutputDatum -> Maybe a
-readDatum _ NoOutputDatum = Nothing
-readDatum txIn (OutputDatumHash dh) = maybeTraceError "Failed to find hash of or decode datum" Just $ fromDatum =<< flip findDatum txIn dh
-readDatum _ (OutputDatum d) = maybeTraceError "Failed to find hash of or decode datum" Just $ fromDatum d
+{-# INLINABLE lookupDatum #-}
+lookupDatum :: PlutusTx.FromData a => TxInfo -> OutputDatum -> Maybe a
+lookupDatum _ NoOutputDatum = Nothing
+lookupDatum txIn (OutputDatumHash dh) = maybeTraceError "Failed to find hash of or decode datum" Just $ fromDatum =<< flip findDatum txIn dh
+lookupDatum _ (OutputDatum d) = maybeTraceError "Failed to find hash of or decode datum" Just $ fromDatum d
 
 readTxOutDatum :: PlutusTx.FromData a => TxInfo -> TxOut -> Maybe a
 readTxOutDatum txIn TxOut{txOutAddress = Address{addressCredential=ScriptCredential _}, ..} =
-    readDatum txIn txOutDatum
+    lookupDatum txIn txOutDatum
 readTxOutDatum _ _ = traceError "Non-script output cannot have a datum"

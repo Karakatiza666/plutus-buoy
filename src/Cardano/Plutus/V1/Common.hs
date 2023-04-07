@@ -61,6 +61,6 @@ import Control.Arrow ((&&&))
 fromDatum :: PlutusTx.FromData a => Datum -> Maybe a
 fromDatum = PlutusTx.fromBuiltinData . getDatum
 
-{-# INLINABLE readDatum #-}
-readDatum :: PlutusTx.FromData a => TxInfo -> DatumHash -> Maybe a
-readDatum txIn = fromDatum <=< flip findDatum txIn
+{-# INLINABLE lookupDatum #-}
+lookupDatum :: PlutusTx.FromData a => TxInfo -> DatumHash -> Maybe a
+lookupDatum txIn = fromDatum <=< flip findDatum txIn

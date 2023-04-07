@@ -2,10 +2,13 @@ module Cardano.Plutus.Sort where
 
 import PlutusTx.Prelude
 import PlutusTx
+import PlutusTx.Builtins
 import PlutusTx.List
 import Control.Arrow ((&&&))
 import GHC.Prim (seq)
 import Cardano.Plutus.List
+import Cardano.Plutus.Monad
+import Data.These
 
 -- |
 -- > comparing p x y = compare (p x) (p y)
@@ -172,3 +175,47 @@ groupSortBy cmp grp = aggregate . sortBy cmp
 {-# INLINABLE monoid_group #-}
 monoid_group :: Monoid a => a -> [a] -> a
 monoid_group x xs = x <> mconcat xs
+
+-- =====================
+
+sortOn :: Ord b => (a -> b) -> [a] -> [a]
+sortOn f =
+  map snd . sortBy (comparing fst) . map (\x -> let y = f x in (y, x))
+
+-- MergeSort
+-- Sort a list of distinct items, or short-circuit to Nothing if duplicates found
+{-# INLINABLE sortDistinct #-}
+sortDistinct :: Ord a => [a] -> Maybe [a]
+sortDistinct xs = sort' (length xs) xs
+  where
+    sort' _ [] = Just []
+    sort' _ [x] = Just [x]
+    sort' _ [x, y]
+      | x < y = Just [x, y]
+      | x > y = Just [y, x]
+      | otherwise = Nothing
+    sort' len xs = join $ liftA2 merge (sort' half left) (sort' (len - half) right)
+      where
+        half = len `divideInteger` 2
+        (left, right) = splitAtWithLen half xs len
+        merge xs [] = Just xs
+        merge [] ys = Just ys
+        merge (x:xs) (y:ys)
+          | x < y = (Just . (x :)) =<< merge xs (y:ys)
+          | x > y = (Just . (y :)) =<< merge (x:xs) ys
+          | otherwise = Nothing
+
+-- match corresponding elements in pairs, skipping missing elements with `Nothing`.
+-- If multiple left elements correspond to one of the right elements or vice versa -
+-- the first pair should have corresponding left and right elements,
+-- and in the subsequent pairs the pair component should be `Nothing`.
+{-# INLINE matchPairs #-}
+matchPairs :: Ord a => (b -> a) -> [b] -> [b] -> [These b b]
+matchPairs f xs ys = go (sortOn fst $ map (\x -> (f x, x)) xs) (sortOn fst $ map (\y -> (f y, y)) ys)
+   where
+      go [] ys' = map That (map snd ys')
+      go xs' [] = map This (map snd xs')
+      go ((xk, xl):xs') ((yk, yr):ys')
+        | xk < yk  = This xl : go xs' ((yk, yr):ys')
+        | xk > yk  = That yr : go ((xk, xl):xs') ys'
+        | otherwise = These xl yr : go xs' ys'

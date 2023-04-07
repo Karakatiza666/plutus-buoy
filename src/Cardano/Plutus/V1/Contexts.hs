@@ -27,9 +27,9 @@ import PlutusTx.AssocMap qualified as PMap
 consumedUTxO :: (TxInInfo -> Bool) -> TxInfo -> Bool
 consumedUTxO pred txIn = pred `any` txInfoInputs txIn -- length (inputOutsThat pred txIn) > 0
 
-{-# INLINABLE scriptInputsAt #-}
-scriptInputsAt :: ValidatorHash -> TxInfo -> [(DatumHash, Value)]
-scriptInputsAt h p =
+{-# INLINABLE scriptInputOutsAt #-}
+scriptInputOutsAt :: ValidatorHash -> TxInfo -> [(DatumHash, Value)]
+scriptInputOutsAt h p =
     let flt TxOut{txOutDatumHash=Just ds, txOutAddress=Address (ScriptCredential s) _, txOutValue} | s == h = Just (ds, txOutValue)
         flt _ = Nothing
     in mapMaybe flt (txInInfoResolved `map` txInfoInputs p)
@@ -61,17 +61,17 @@ scriptTxInsThat TxInfo {..} pred =
 -- | Get the total value spent by the given validator in this transaction.
 valueSpentFromScript :: ValidatorHash -> TxInfo -> Value
 valueSpentFromScript h ptx =
-    let outputs = map snd (scriptInputsAt h ptx)
+    let outputs = map snd (scriptInputOutsAt h ptx)
     in mconcat outputs
 
 {-# INLINABLE hasOnlyDatumAt #-}
 hasOnlyDatumAt :: FromData a => TxInfo -> (a -> Bool) -> ValidatorHash -> Bool
-hasOnlyDatumAt txIn pred hash = or . fmap pred $ (readDatum txIn . thd3) =<<
+hasOnlyDatumAt txIn pred hash = or . fmap pred $ (lookupDatum txIn . thd3) =<<
     onlyAndSatisfies ((hash ==) . fst3) (scriptOutputs txIn)
 
 {-# INLINABLE hasOnlyScriptOut #-}
 hasOnlyScriptOut :: FromData a => TxInfo -> ((ValidatorHash, Value, a) -> Bool) -> Bool
-hasOnlyScriptOut txIn pred = isJust $ onlyAndSatisfies (or . fmap pred . third3M (readDatum txIn)) (scriptOutputs txIn)
+hasOnlyScriptOut txIn pred = isJust $ onlyAndSatisfies (or . fmap pred . third3M (lookupDatum txIn)) (scriptOutputs txIn)
 
 {-# INLINABLE publicKeyOutputs #-}
 publicKeyOutputs :: TxInfo -> [(PubKeyHash, Value)]
