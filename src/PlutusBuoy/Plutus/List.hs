@@ -106,3 +106,9 @@ reduceAssociative f as =
 {-# INLINE zipWith3M #-}
 zipWith3M :: (Applicative m) => (a -> b -> c -> m d) -> [a] -> [b] -> [c] -> m [d]
 zipWith3M f xs ys zs =  sequenceA (zipWith3 f xs ys zs)
+
+{-# INLINE last #-}
+last :: [a] -> a
+last [x]                =  x
+last (_:xs)             =  last xs
+last []                 =  traceError "last: empty"
