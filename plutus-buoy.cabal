@@ -83,8 +83,9 @@ library
       PlutusBuoy.Plutus.Maybe
       PlutusBuoy.Plutus.Monad
       PlutusBuoy.Plutus.Sort
-    other-modules:
+      PlutusBuoy.Plutus.Tuple
       PlutusBuoy.Plutus.Validator
+    other-modules:
     build-depends:
       base >= 4.9 && < 5,
       aeson,
