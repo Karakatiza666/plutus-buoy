@@ -132,11 +132,10 @@ outTxId = getTxId . txOutRefId
 biliftA2 :: (a -> b -> c) -> (a' -> b' -> c') -> (a, a') -> (b, b') -> (c, c')
 h `biliftA2` h' = \ (a, a') (b, b') -> (h a b, h' a' b')
 
--- {-# INLINABLE on #-}
--- on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
--- -- (.*.) `on` f = \x y -> f x .*. f y
--- -- redefine on so we avoid duplicate computation for most values.
--- (.*.) `on` f = \x -> let fx = f x in \y -> fx .*. f y
+{-# INLINABLE on' #-}
+-- redefine on so we avoid duplicate computation for most values.
+on' :: (b -> b -> c) -> (a -> b) -> a -> a -> c
+(.*.) `on'` f = \x -> let fx = f x in \y -> fx .*. f y
 
 {-# INLINABLE groupOn #-}
 groupOn :: (Ord b) => (a -> b) -> [a] -> [[a]]
