@@ -130,10 +130,27 @@ breakReverseByteString p bs =
 isAsciiDigit :: Integer -> Bool
 isAsciiDigit c = c >= 48 && c < 58
 
-{-# INLINEABLE incModByteStringLength #-}
-incModByteStringLength :: Integer -> Integer -> BuiltinByteString -> BuiltinByteString
-incModByteStringLength len byte bytestring = snocByteString init ((last + byte) `modInteger` 256)
+{-# INLINEABLE updateLeastBigEndianLength #-}
+updateLeastBigEndianLength :: Integer -> (Integer -> Integer) -> BuiltinByteString -> BuiltinByteString
+updateLeastBigEndianLength len update bytestring = snocByteString init (update last `modInteger` 256)
   where
     idx = len - 1
     init = sliceByteString 0 idx bytestring
     last = indexByteString bytestring idx
+
+{-# INLINEABLE updateLeastBigEndian #-}
+updateLeastBigEndian :: (Integer -> Integer) -> BuiltinByteString -> BuiltinByteString
+updateLeastBigEndian update bytestring = updateLeastBigEndianLength (lengthOfByteString bytestring) update bytestring
+
+-- Better performance than updateLeastBigEndianLength
+{-# INLINEABLE updateLeastLittleEndianLength #-}
+updateLeastLittleEndianLength :: Integer -> (Integer -> Integer) -> BuiltinByteString -> BuiltinByteString
+updateLeastLittleEndianLength len update bytestring = consByteString (update first `modInteger` 256) tail 
+  where
+    first = indexByteString bytestring 0
+    tail = sliceByteString 1 len bytestring
+
+-- Better performance than updateLeastBigEndian
+{-# INLINEABLE updateLeastLittleEndian #-}
+updateLeastLittleEndian :: (Integer -> Integer) -> BuiltinByteString -> BuiltinByteString
+updateLeastLittleEndian update bytestring = updateLeastLittleEndianLength (lengthOfByteString bytestring) update bytestring
