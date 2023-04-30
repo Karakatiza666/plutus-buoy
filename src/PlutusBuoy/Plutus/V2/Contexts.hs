@@ -320,13 +320,25 @@ assetTransferredToHolder currency token = (valueOf' currency token . ) . valueTr
 aclTransferredToHolder :: AssetClass -> CurrencySymbol -> TxInfo -> Integer
 aclTransferredToHolder (AssetClass (currency, token)) = (valueOf' currency token . ) . valueTransferredToHolder
 
--- {-# INLINABLE signedByPolicyHolder #-}
--- signedByPolicyHolder :: CurrencySymbol -> TxInfo -> Bool
--- signedByPolicyHolder currency txIn = inputOutsThat $ txInHasCurrency currency
+{-# INLINABLE signedByUTxO #-}
+signedByUTxO :: TxInfo -> Maybe TxOut -> Bool
+signedByUTxO txIn = (Just True ==) . fmap (txSignedByPubKey txIn . txOutAddress)
 
-{-# INLINABLE signedByRefPolicyHolder #-}
-signedByRefPolicyHolder :: CurrencySymbol -> TxInfo -> Bool
-signedByRefPolicyHolder currency txIn = (Just True ==) $ fmap (txSignedByPubKey txIn . txOutAddress) $ refInputOutThat (txInHasCurrency currency) txIn
+{-# INLINABLE findPolicyHolder #-}
+findPolicyHolder :: TxInfo -> CurrencySymbol -> Maybe TxOut
+findPolicyHolder txIn currency = inputOutThat (txInHasCurrency currency) txIn
+
+{-# INLINABLE findPolicyHolderRef #-}
+findPolicyHolderRef :: TxInfo -> CurrencySymbol -> Maybe TxOut
+findPolicyHolderRef txIn currency = refInputOutThat (txInHasCurrency currency) txIn
+
+{-# INLINABLE signedByPolicyHolder #-}
+signedByPolicyHolder :: TxInfo -> CurrencySymbol -> Bool
+signedByPolicyHolder txIn = signedByUTxO txIn . findPolicyHolder txIn
+
+{-# INLINABLE signedByPolicyHolderRef #-}
+signedByPolicyHolderRef :: TxInfo -> CurrencySymbol -> Bool
+signedByPolicyHolderRef txIn = signedByUTxO txIn . findPolicyHolderRef txIn
 
 inlineDatum :: FromData a => OutputDatum -> Maybe a
 inlineDatum (OutputDatum d) = fromDatum d
