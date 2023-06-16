@@ -188,6 +188,10 @@ infixl 4 <@>
 valueOf' :: CurrencySymbol -> TokenName -> Value -> Integer
 valueOf' p a v = Value.valueOf v p a
 
+{-# INLINABLE maybeValueOf' #-}
+maybeValueOf' :: CurrencySymbol -> TokenName -> Value -> Maybe Integer
+maybeValueOf' p a v = PMap.lookup a =<< PMap.lookup p (getValue v)
+
 {-# INLINABLE onlyValueOf #-}
 onlyValueOf :: CurrencySymbol -> TokenName -> Value -> Value
 onlyValueOf symbol token = Value.singleton symbol token . valueOf' symbol token
