@@ -1,0 +1,35 @@
+{
+   "name": "Plutus Apps",
+   "image": "plutus-apps-container:latest",
+
+   //"remoteUser": "plutus",
+
+   "mounts": [
+       // This shares cabal's remote repository state with the host. We don't mount the whole of '.cabal', because
+       // 1. '.cabal/config' contains absolute paths that will only make sense on the host, and
+       // 2. '.cabal/store' is not necessarily portable to different version of cabal etc.
+       "source=${localEnv:HOME}/.cabal/packages,target=/home/plutus/.cabal/packages,type=bind,consistency=cached",
+       "source=${localEnv:HOME}/.cabal/store,target=/root/.cabal/store,type=bind,consistency=cached",
+       "source=${localWorkspaceFolder}/.git,target=/workspaces/astro-mint-plutus/.git,type=bind,consistency=cached",
+       // "source=${localWorkspaceFolder}/.devcontainer/nsswitch.conf,target=/etc/nsswitch.conf,type=bind,consistency=cached",
+       // "source=/etc/os-release,target=/etc/os-release,type=bind,consistency=cached",
+       // "source=/etc/profile,target=/etc/profile,type=bind,consistency=cached"
+   ],
+   "customizations":{
+      "vscode": {
+         "settings": {
+            "terminal.integrated.profiles.linux": {
+               "bash": {
+                  "path": "/bin/bash"
+               }
+            },
+            "terminal.integrated.defaultProfile.linux": "bash"
+         },
+         "extensions": [
+            "haskell.haskell"
+         ]
+      }
+   },
+   "postStartCommand": "cd /home/user/plutus-apps && nix-shell --extra-experimental-features flakes",
+   
+}

@@ -357,6 +357,10 @@ requireOutputDatums hash txIn = map
 getOwnTokens :: ScriptContext -> Value -> [(TokenName, Integer)]
 getOwnTokens ctx = concat . fmap PMap.toList . PMap.lookup (ownCurrencySymbol ctx) . getValue
 
+{-# INLINABLE getOwnTokensValue #-}
+getOwnTokensValue :: ScriptContext -> Value -> Value
+getOwnTokensValue ctx = maybe mempty (Value . PMap.singleton (ownCurrencySymbol ctx)) . PMap.lookup (ownCurrencySymbol ctx) . getValue
+
 {-# INLINABLE referenceAt #-}
 referenceAt :: TxOutRef -> TxInfo -> Maybe TxOut
 referenceAt ref txIn = txInInfoResolved <$> find ((ref ==) . txInInfoOutRef) (txInfoReferenceInputs txIn)
