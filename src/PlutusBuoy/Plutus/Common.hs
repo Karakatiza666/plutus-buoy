@@ -274,25 +274,6 @@ findCurrency currency = PMap.lookup currency . getValue
 flattenCurrency :: CurrencySymbol -> Value -> [(TokenName, Integer)]
 flattenCurrency currency = maybe [] PMap.toList . PMap.lookup currency . getValue
 
-{-# INLINABLE spentValue #-}
-spentValue :: TxInfo -> (Value -> Bool) -> Bool
-spentValue txIn pred = (pred . txOutValue . txInInfoResolved) `any` txInfoInputs txIn
-
-{-# INLINABLE txSignedByPubKey #-}
-txSignedByPubKey :: TxInfo -> Address -> Bool
-txSignedByPubKey txIn Address { addressCredential = PubKeyCredential hash } = txSignedBy txIn hash
-txSignedByPubKey _ _ = False
-
--- Spent or referenced from signing PubKeyHash
-{-# INLINABLE spentOrReferencedValue #-}
-spentOrReferencedValue :: TxInfo -> (Value -> Bool) -> Bool
-spentOrReferencedValue txIn pred = if spentValue txIn pred then True else referenced
-    where
-        referenced = (witnessed . txInInfoResolved) `any` txInfoReferenceInputs txIn
-        witnessed txOut = if pred $ txOutValue $ txOut
-            then txSignedByPubKey txIn $ txOutAddress txOut
-            else False
-
 -- =====================
 
 

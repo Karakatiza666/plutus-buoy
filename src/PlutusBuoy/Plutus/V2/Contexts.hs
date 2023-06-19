@@ -357,9 +357,41 @@ requireOutputDatums hash txIn = map
 getOwnTokens :: ScriptContext -> Value -> [(TokenName, Integer)]
 getOwnTokens ctx = concat . fmap PMap.toList . PMap.lookup (ownCurrencySymbol ctx) . getValue
 
-{-# INLINABLE getOwnTokensValue #-}
-getOwnTokensValue :: ScriptContext -> Value -> Value
-getOwnTokensValue ctx = maybe mempty (Value . PMap.singleton (ownCurrencySymbol ctx)) . PMap.lookup (ownCurrencySymbol ctx) . getValue
+{-# INLINABLE getOwnCurrencyValue #-}
+getOwnCurrencyValue :: ScriptContext -> Value -> Value
+getOwnCurrencyValue ctx = maybe mempty (Value . PMap.singleton (ownCurrencySymbol ctx)) . PMap.lookup (ownCurrencySymbol ctx) . getValue
+
+-- Was such Value spent or referenced from signing PubKeyHash
+{-# INLINABLE spentOrWitnessedValue #-}
+spentOrWitnessedValue :: TxInfo -> (Value -> Bool) -> Bool
+spentOrWitnessedValue txIn pred = if spentValue txIn pred then True else referenced
+    where
+        referenced = (witnessed . txInInfoResolved) `any` txInfoReferenceInputs txIn
+        witnessed txOut = if pred $ txOutValue $ txOut
+            then txSignedByPubKey txIn $ txOutAddress txOut
+            else False
+
+-- Was such Value spent or referenced
+{-# INLINABLE spentOrReferencedValue #-}
+spentOrReferencedValue :: TxInfo -> (Value -> Bool) -> Bool
+spentOrReferencedValue txIn pred = if spentValue txIn pred then True else referencedValue txIn pred
+
+{-# INLINABLE spentAndReferencedValue #-}
+spentAndReferencedValue :: TxInfo -> Value
+spentAndReferencedValue TxInfo{..} = foldMap (txOutValue . txInInfoResolved) $ txInfoReferenceInputs <> txInfoInputs
+
+{-# INLINABLE spentValue #-}
+spentValue :: TxInfo -> (Value -> Bool) -> Bool
+spentValue txIn pred = (pred . txOutValue . txInInfoResolved) `any` txInfoInputs txIn
+
+{-# INLINABLE referencedValue #-}
+referencedValue :: TxInfo -> (Value -> Bool) -> Bool
+referencedValue txIn pred = (pred . txOutValue . txInInfoResolved) `any` txInfoReferenceInputs txIn
+
+{-# INLINABLE txSignedByPubKey #-}
+txSignedByPubKey :: TxInfo -> Address -> Bool
+txSignedByPubKey txIn Address { addressCredential = PubKeyCredential hash } = txSignedBy txIn hash
+txSignedByPubKey _ _ = False
 
 {-# INLINABLE referenceAt #-}
 referenceAt :: TxOutRef -> TxInfo -> Maybe TxOut
